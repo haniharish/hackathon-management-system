@@ -4,6 +4,7 @@
 
 :root {
   color: #01472e;
+  transition: background-color 300ms ease, color 300ms ease;
   background: linear-gradient(135deg, #fefae0 0%, #e9edc9 100%);
   font-family: 'Inter', sans-serif;
 }
@@ -13,8 +14,26 @@ body {
   min-height: 100vh;
   background-image: radial-gradient(circle at top left, rgba(204,213,174,0.35), transparent 30%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
   color: #01472e;
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
+html.dark {
+  color: #e4f1dc;
+  background: #081713;
+}
+
+html.dark body {
+  background-color: #081713;
+  background-image: radial-gradient(circle at top left, rgba(72, 124, 101, 0.22), transparent 30%), radial-gradient(circle at bottom right, rgba(163, 177, 138, 0.12), transparent 28%);
+  color: #e4f1dc;
+}
+
+html.dark [class*='bg-white'] { background-color: rgba(23, 55, 47, 0.84) !important; }
+html.dark [class*='bg-cream'] { background-color: rgba(30, 65, 55, 0.88) !important; }
+html.dark [class*='bg-olive'] { background-color: rgba(51, 89, 70, 0.72) !important; }
+html.dark [class*='text-forest'] { color: #e4f1dc !important; }
+html.dark [class*='border-white'] { border-color: rgba(228, 241, 220, 0.14) !important; }
+html.dark [class*='border-forest'] { border-color: rgba(187, 218, 193, 0.25) !important; }
 * {
   box-sizing: border-box;
 }
