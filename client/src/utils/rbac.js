@@ -1,4 +1,5 @@
 export const ROLES = {
+  ADMINISTRATOR: 'administrator',
   ADMIN: 'admin',
   ORGANIZER: 'organizer',
   PARTICIPANT: 'participant',
@@ -7,7 +8,8 @@ export const ROLES = {
 
 export const hasRole = (user, role) => user?.role === role;
 export const hasAnyRole = (user, roles = []) => roles.includes(user?.role);
-export const canAccessAdmin = (user) => hasRole(user, ROLES.ADMIN);
-export const canAccessOrganizer = (user) => hasAnyRole(user, [ROLES.ADMIN, ROLES.ORGANIZER]);
-export const canAccessJudge = (user) => hasAnyRole(user, [ROLES.ADMIN, ROLES.JUDGE]);
-export const canAccessParticipant = (user) => hasAnyRole(user, [ROLES.ADMIN, ROLES.PARTICIPANT, ROLES.ORGANIZER, ROLES.JUDGE]);
+export const isAdministrator = (user) => hasAnyRole(user, [ROLES.ADMINISTRATOR, ROLES.ADMIN]);
+export const canAccessAdmin = isAdministrator;
+export const canAccessOrganizer = (user) => isAdministrator(user) || hasRole(user, ROLES.ORGANIZER);
+export const canAccessJudge = (user) => isAdministrator(user) || hasRole(user, ROLES.JUDGE);
+export const canAccessParticipant = (user) => isAdministrator(user) || hasAnyRole(user, [ROLES.PARTICIPANT, ROLES.ORGANIZER, ROLES.JUDGE]);

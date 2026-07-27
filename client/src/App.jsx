@@ -40,7 +40,7 @@ function AppRoutes() {
             <Route path="/login" element={<motion.div {...pageTransition}><LoginPage /></motion.div>} />
             <Route path="/signup" element={<motion.div {...pageTransition}><SignupPage /></motion.div>} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.ORGANIZER, ROLES.PARTICIPANT, ROLES.JUDGE]} />}>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR, ROLES.ADMIN, ROLES.ORGANIZER, ROLES.PARTICIPANT, ROLES.JUDGE]} />}>
             <Route path="/dashboard" element={<motion.div {...pageTransition}><DashboardPage /></motion.div>} />
             <Route path="/leaderboard" element={<motion.div {...pageTransition}><LeaderboardPage /></motion.div>} />
             <Route path="/submission" element={<motion.div {...pageTransition}><SubmissionPage /></motion.div>} />

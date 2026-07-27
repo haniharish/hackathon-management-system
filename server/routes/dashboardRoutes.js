@@ -18,7 +18,7 @@ router.get('/stats', protect, authorizeRoles('admin', 'organizer', 'participant'
       return res.json(getFallbackStats());
     }
 
-    if (req.user.role === 'admin') {
+    if (['admin', 'administrator'].includes(req.user.role)) {
       return platformAnalytics(req, res);
     }
 

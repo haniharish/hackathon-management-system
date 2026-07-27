@@ -39,7 +39,7 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
-            {user && canAccessAdmin(user) && <NavLink to="/dashboard" className="text-forest/70 transition hover:text-forest/80">Admin</NavLink>}
+            {user && canAccessAdmin(user) && <NavLink to="/dashboard" className="text-forest/70 transition hover:text-forest/80">Administrator</NavLink>}
             {user && canAccessOrganizer(user) && <NavLink to="/dashboard" className="text-forest/70 transition hover:text-forest/80">Organizer</NavLink>}
             {user && canAccessJudge(user) && <NavLink to="/dashboard" className="text-forest/70 transition hover:text-forest/80">Judge</NavLink>}
           </nav>
@@ -56,7 +56,7 @@ export default function Layout() {
             {user ? (
               <>
                 <NavLink to="/dashboard" className="rounded-full bg-forest px-4 py-2 text-sm font-semibold text-cream transition hover:scale-105">Dashboard</NavLink>
-                {user.role === ROLES.ADMIN && <span className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-forest">Admin</span>}
+                {canAccessAdmin(user) && <span className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-forest">Administrator</span>}
                 {user.role === ROLES.ORGANIZER && <span className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-forest">Organizer</span>}
                 {user.role === ROLES.JUDGE && <span className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-forest">Judge</span>}
                 {user.role === ROLES.PARTICIPANT && <span className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-forest">Participant</span>}
@@ -81,15 +81,7 @@ export default function Layout() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 HackVerse. A premium hackathon management platform.</p>
             <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsDark((current) => !current)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-forest/20 bg-white/70 text-forest transition hover:scale-105 hover:bg-cream dark:border-emerald-100/15 dark:bg-[#17372f] dark:text-[#e4f1dc] dark:hover:bg-[#245044]"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDark ? <FaSun aria-hidden="true" /> : <FaMoon aria-hidden="true" />}
-            </button>
+
               <FaRocket className="text-forest" />
               <span>Built for ambitious builders</span>
             </div>

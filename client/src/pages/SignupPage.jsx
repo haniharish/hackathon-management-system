@@ -54,8 +54,9 @@ export default function SignupPage() {
           <option value="participant">Participant — join hackathons & submit projects</option>
           <option value="organizer">Organizer — create & manage events</option>
           <option value="judge">Judge — evaluate submissions</option>
+          <option value="administrator">Administrator — manage the full platform</option>
         </select>
-        <p className="text-xs text-forest/60">Admin accounts are assigned by platform administrators only.</p>
+        <p className="text-xs text-forest/60">Choose the role that matches how you will use the platform.</p>
         <button disabled={submitting} className="w-full rounded-full bg-forest px-5 py-3 font-semibold text-cream transition hover:scale-[1.01] disabled:opacity-60">
           {submitting ? 'Creating account…' : 'Create account'}
         </button>

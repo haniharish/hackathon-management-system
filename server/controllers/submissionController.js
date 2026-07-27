@@ -76,7 +76,7 @@ export const updateSubmission = async (req, res) => {
     if (!submission) return res.status(404).json({ message: 'Submission not found' });
 
     const isOwner = submission.submittedBy.toString() === req.user._id.toString();
-    if (!isOwner && req.user.role !== 'admin') {
+    if (!isOwner && !['admin', 'administrator'].includes(req.user.role)) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 

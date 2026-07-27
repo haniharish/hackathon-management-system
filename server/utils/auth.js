@@ -29,4 +29,4 @@ export const sanitizeUser = (user) => {
   };
 };
 
-export const ALLOWED_SIGNUP_ROLES = ['participant', 'organizer', 'judge'];
+export const ALLOWED_SIGNUP_ROLES = ['participant', 'organizer', 'judge', 'administrator'];

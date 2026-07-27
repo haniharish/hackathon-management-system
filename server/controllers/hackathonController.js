@@ -5,7 +5,7 @@ import { getFallbackHackathons } from '../utils/fallbackData.js';
 const isDbConnected = () => Hackathon.db?.readyState === 1;
 
 const canManageHackathon = (hackathon, user) =>
-  user.role === 'admin' || hackathon.organizer.toString() === user._id.toString();
+  ['admin', 'administrator'].includes(user.role) || hackathon.organizer.toString() === user._id.toString();
 
 export const listHackathons = async (req, res) => {
   try {
@@ -229,7 +229,7 @@ export const getMyRegistrations = async (req, res) => {
 
 export const getManagedRegistrations = async (req, res) => {
   try {
-    const events = await Hackathon.find(req.user.role === 'admin' ? {} : { organizer: req.user._id }).select('_id');
+    const events = await Hackathon.find(['admin', 'administrator'].includes(req.user.role) ? {} : { organizer: req.user._id }).select('_id');
     const registrations = await Registration.find({ hackathon: { $in: events.map((event) => event._id) } }).populate('user', 'name email').populate('hackathon', 'title').sort({ createdAt: -1 });
     res.json(registrations);
   } catch (error) { res.status(500).json({ message: error.message }); }

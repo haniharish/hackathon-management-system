@@ -44,7 +44,7 @@ export const listUsers = async (req, res) => {
 export const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
-    const allowed = ['admin', 'organizer', 'participant', 'judge'];
+    const allowed = ['administrator', 'admin', 'organizer', 'participant', 'judge'];
     if (!allowed.includes(role)) {
       return res.status(400).json({ message: 'Invalid role' });
     }
@@ -85,7 +85,7 @@ export const platformAnalytics = async (req, res) => {
         ...stats,
         registrations: 0,
         teams: 0,
-        byRole: { admin: 1, organizer: 0, participant: 0, judge: 0 },
+        byRole: { administrator: 1, admin: 0, organizer: 0, participant: 0, judge: 0 },
       });
     }
 
@@ -97,7 +97,7 @@ export const platformAnalytics = async (req, res) => {
       User.aggregate([{ $group: { _id: '$role', count: { $sum: 1 } } }]),
     ]);
 
-    const byRole = { admin: 0, organizer: 0, participant: 0, judge: 0 };
+    const byRole = { administrator: 0, admin: 0, organizer: 0, participant: 0, judge: 0 };
     byRoleAgg.forEach((row) => {
       if (byRole[row._id] !== undefined) byRole[row._id] = row.count;
     });

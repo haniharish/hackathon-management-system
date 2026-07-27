@@ -82,7 +82,7 @@ export const updateTeam = async (req, res) => {
   try {
     const team = await Team.findById(req.params.id);
     if (!team) return res.status(404).json({ message: 'Team not found' });
-    if (team.leader.toString() !== req.user._id.toString() && req.user.role !== 'admin') return res.status(403).json({ message: 'Only the team leader can edit team details' });
+    if (team.leader.toString() !== req.user._id.toString() && !['admin', 'administrator'].includes(req.user.role)) return res.status(403).json({ message: 'Only the team leader can edit team details' });
     if (req.body.name?.trim()) team.name = req.body.name.trim();
     await team.save();
     res.json(team);
@@ -165,7 +165,7 @@ export const approveTeam = async (req, res) => {
   try {
     const team = await Team.findById(req.params.id).populate('hackathon');
     if (!team) return res.status(404).json({ message: 'Team not found' });
-    if (req.user.role !== 'admin' && team.hackathon.organizer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
+    if (!['admin', 'administrator'].includes(req.user.role) && team.hackathon.organizer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
     team.status = 'approved';
     await team.save();
     res.json(team);
@@ -178,7 +178,7 @@ export const rejectTeam = async (req, res) => {
   try {
     const team = await Team.findById(req.params.id).populate('hackathon');
     if (!team) return res.status(404).json({ message: 'Team not found' });
-    if (req.user.role !== 'admin' && team.hackathon.organizer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
+    if (!['admin', 'administrator'].includes(req.user.role) && team.hackathon.organizer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
     team.status = 'rejected';
     await team.save();
     res.json(team);

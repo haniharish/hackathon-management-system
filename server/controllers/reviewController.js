@@ -25,7 +25,7 @@ export const submitReview = async (req, res) => {
     const hackathon = await Hackathon.findById(submission.hackathon);
     const isAssigned =
       hackathon?.assignedJudges?.some((j) => j.toString() === req.user._id.toString()) ||
-      req.user.role === 'admin';
+      ['admin', 'administrator'].includes(req.user.role);
 
     if (req.user.role === 'judge' && !isAssigned) {
       return res.status(403).json({ message: 'You are not assigned to judge this hackathon' });

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { ROLES } from '../utils/rbac';
+import { ROLES, isAdministrator } from '../utils/rbac';
 import { adminApi, hackathonApi, reviewApi, submissionApi, teamApi } from '../services/api';
 
 const card = 'rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-lg backdrop-blur';
@@ -21,6 +21,8 @@ export default function DashboardPage() {
   const [teams, setTeams] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [judges, setJudges] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [assignedHackathons, setAssignedHackathons] = useState([]);
   const [notice, setNotice] = useState('');
@@ -32,16 +34,18 @@ export default function DashboardPage() {
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [review, setReview] = useState({ feedback: '', comments: '', ...Object.fromEntries(scoreFields.map((field) => [field, 0])) });
 
+  const isAdmin = isAdministrator(user);
   const isParticipant = user?.role === ROLES.PARTICIPANT;
-  const isOrganizer = user?.role === ROLES.ORGANIZER || user?.role === ROLES.ADMIN;
+  const isOrganizer = user?.role === ROLES.ORGANIZER || isAdmin;
   const isJudge = user?.role === ROLES.JUDGE;
-  const ownHackathons = useMemo(() => hackathons.filter((item) => user?.role === ROLES.ADMIN || getId(item.organizer) === getId(user)), [hackathons, user]);
+  const ownHackathons = useMemo(() => hackathons.filter((item) => isAdmin || getId(item.organizer) === getId(user)), [hackathons, user]);
 
   const load = async () => {
     setLoading(true); setError('');
     try {
       const requests = [hackathonApi.list(isOrganizer && user?.role === ROLES.ORGANIZER ? { mine: true } : undefined), teamApi.list(isParticipant ? { mine: true } : undefined), submissionApi.list()];
       if (isOrganizer) requests.push(adminApi.judges());
+      if (isAdmin) requests.push(adminApi.users(), adminApi.analytics());
       if (isJudge) requests.push(reviewApi.assignments());
       const results = await Promise.all(requests);
       setHackathons(results[0].data.hackathons || []);
@@ -49,6 +53,11 @@ export default function DashboardPage() {
       setSubmissions(results[2].data || []);
       let index = 3;
       if (isOrganizer) setJudges(results[index++].data || []);
+      if (isAdmin) {
+        const usersResponse = results[index++].data;
+        setUsers(usersResponse.users || []);
+        setAnalytics(results[index++].data || null);
+      }
       if (isJudge) {
         setAssignments(results[index]?.data?.submissions || []);
         setAssignedHackathons(results[index]?.data?.hackathons || []);
@@ -99,6 +108,7 @@ export default function DashboardPage() {
       {error && <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</p>}
       {loading ? <div className={card}>Loading your workspace...</div> : <>
         {isParticipant && <ParticipantDashboard hackathons={hackathons} teams={teams} submissions={submissions} onRegister={(id) => run(() => hackathonApi.register(id), 'You are registered for this hackathon.')} />}
+        {isAdmin && <AdministratorDashboard users={users} analytics={analytics} hackathons={hackathons} teams={teams} submissions={submissions} run={run} />}
         {isOrganizer && <OrganizerDashboard eventForm={eventForm} setEventForm={setEventForm} editingId={editingId} saveHackathon={saveHackathon} cancelEdit={() => { setEditingId(''); setEventForm(emptyHackathon); }} hackathons={ownHackathons} teams={teams} submissions={submissions} judges={judges} selectedJudgeIds={selectedJudgeIds} editHackathon={editHackathon} toggleJudge={toggleJudge} run={run} />}
         {isJudge && <JudgeDashboard assignments={assignments} assignedHackathons={assignedHackathons} selectedSubmission={selectedSubmission} setSelectedSubmission={setSelectedSubmission} review={review} setReview={setReview} submitReview={submitReview} />}
       </>}
@@ -106,6 +116,19 @@ export default function DashboardPage() {
   );
 }
 
+
+function AdministratorDashboard({ users, analytics, hackathons, teams, submissions, run }) {
+  const roles = ['administrator', 'organizer', 'judge', 'participant'];
+  const upcoming = hackathons.filter((item) => item.startDate && new Date(item.startDate) >= new Date()).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  const organizers = users.filter((person) => person.role === ROLES.ORGANIZER).length;
+  return <><section className={card}>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-semibold">Platform control</h2><p className="mt-1 text-sm text-forest/70">Manage users, roles, access, and platform activity.</p></div><div className="flex gap-2 text-sm"><span className="rounded-full bg-cream/50 px-3 py-2">Users: {analytics?.users ?? users.length}</span><span className="rounded-full bg-cream/50 px-3 py-2">Hackathons: {analytics?.hackathons ?? 0}</span><span className="rounded-full bg-cream/50 px-3 py-2">Submissions: {analytics?.submissions ?? 0}</span></div></div>
+    <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="text-forest/60"><tr><th className="pb-3">User</th><th className="pb-3">Role</th><th className="pb-3">Status</th><th className="pb-3">Actions</th></tr></thead><tbody>{users.map((person) => <tr key={person._id || person.id} className="border-t border-forest/10"><td className="py-3"><b>{person.name}</b><div className="text-forest/60">{person.email}</div></td><td className="py-3"><select defaultValue={person.role} onChange={(e) => run(() => adminApi.updateRole(person._id || person.id, e.target.value), 'User role updated.')} className="rounded-lg border border-forest/20 bg-cream/50 px-2 py-1">{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select></td><td className="py-3">{person.isActive === false ? 'Blocked' : 'Active'}</td><td className="py-3"><div className="flex gap-2"><button onClick={() => run(() => adminApi.blockUser(person._id || person.id), person.isActive === false ? 'User unblocked.' : 'User blocked.')} className={subtleButton}>{person.isActive === false ? 'Unblock' : 'Block'}</button><button onClick={() => run(() => adminApi.deleteUser(person._id || person.id), 'User deleted.')} className={subtleButton}>Delete</button></div></td></tr>)}</tbody></table></div>
+  </section><section className={card}>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-semibold">Platform overview</h2><p className="mt-1 text-sm text-forest/70">Full platform visibility and management controls.</p></div><div className="flex flex-wrap gap-2 text-sm"><span className="rounded-full bg-cream/50 px-3 py-2">All teams: {teams.length}</span><span className="rounded-full bg-cream/50 px-3 py-2">All submissions: {submissions.length}</span><span className="rounded-full bg-cream/50 px-3 py-2">Judges: {users.filter((person) => person.role === ROLES.JUDGE).length}</span><span className="rounded-full bg-cream/50 px-3 py-2">Organizers: {organizers}</span></div></div>
+    <div className="mt-5 grid gap-4 lg:grid-cols-2"><div className="rounded-2xl border border-forest/10 bg-cream/50 p-4"><h3 className="font-semibold">Upcoming events</h3><div className="mt-3 space-y-2">{upcoming.length ? upcoming.slice(0, 5).map((event) => <div key={event._id || event.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/70 p-3 text-sm"><span><b>{event.title}</b><span className="block text-forest/60">{event.venue || event.mode}</span></span><span className="text-forest/70">{new Date(event.startDate).toLocaleDateString()}</span></div>) : <p className="text-sm text-forest/70">No upcoming events.</p>}</div></div><div className="rounded-2xl border border-forest/10 bg-cream/50 p-4"><h3 className="font-semibold">Administrator capabilities</h3><ul className="mt-3 space-y-2 text-sm text-forest/70"><li>Manage every hackathon below: create, edit, open or close registration, assign judges, and delete.</li><li>Review all teams and submissions, approve teams, and publish winners.</li><li>Manage every user above, including judge and organizer roles, account blocking, and deletion.</li></ul></div></div>
+  </section></>;
+}
 function ParticipantDashboard({ hackathons, teams, submissions, onRegister }) {
   return <>
     <div className="grid gap-4 md:grid-cols-3">

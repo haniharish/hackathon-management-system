@@ -29,7 +29,7 @@ const seed = async () => {
   const password = await hashPassword('password123');
 
   const [admin, organizer, judge, p1, p2] = await User.create([
-    { name: 'Admin User', email: 'admin@hackverse.com', password, role: 'admin' },
+    { name: 'Administrator User', email: 'admin@hackverse.com', password, role: 'administrator' },
     { name: 'Sarah Organizer', email: 'organizer@hackverse.com', password, role: 'organizer' },
     { name: 'James Judge', email: 'judge@hackverse.com', password, role: 'judge' },
     { name: 'Alex Builder', email: 'participant@hackverse.com', password, role: 'participant' },
@@ -103,7 +103,7 @@ const seed = async () => {
   });
 
   console.log('Seed complete. Demo accounts (password: password123):');
-  console.log('  admin@hackverse.com (admin)');
+  console.log('  admin@hackverse.com (administrator)');
   console.log('  organizer@hackverse.com (organizer)');
   console.log('  judge@hackverse.com (judge)');
   console.log('  participant@hackverse.com (participant)');
